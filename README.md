@@ -2,7 +2,10 @@
 
 KnowCLI 是一个运行在终端里的本地编码助手。它接入 DeepSeek API，可以在当前项目中读取文件、查看目录、修改代码、执行命令，也能生成 Java、Python 或 Node.js 项目骨架。
 
-这是 KnowCLI v1.0：功能不算花哨，但已经能完成一条完整的工作流——理解需求、检查代码、调用工具、根据结果继续处理，最后给出答复。
+KnowCLI v1.0：功能比较简单，但已经实现ReAct模式，能完成一条完整的工作流——理解需求、检查代码、调用工具、根据结果继续处理，最后给出答复。
+
+<img width="1109" height="749" alt="ffdbf9d8e9d46c8a4fd283fab714c03b" src="https://github.com/user-attachments/assets/3811ac5f-bc7a-458e-88d9-49b1f972da05" />
+
 
 ## 能做什么
 
