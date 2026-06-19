@@ -4,7 +4,7 @@ KnowCLI 是一个运行在终端里的本地编码助手。它接入 DeepSeek AP
 
 KnowCLI v1.0：功能比较简单，但已经实现ReAct模式，能完成一条完整的工作流——理解需求、检查代码、调用工具、根据结果继续处理，最后给出答复。
 
-<img width="1109" height="749" alt="ffdbf9d8e9d46c8a4fd283fab714c03b" src="https://github.com/user-attachments/assets/3811ac5f-bc7a-458e-88d9-49b1f972da05" />
+<img width="1109" height="749" alt="微信图片_20260619193605_263_224" src="https://github.com/user-attachments/assets/00e9b016-5aa4-4a86-ae57-633cd065e23c" />
 
 
 ## 能做什么
