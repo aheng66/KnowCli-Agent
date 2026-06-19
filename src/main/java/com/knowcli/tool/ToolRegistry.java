@@ -1,6 +1,7 @@
 package com.knowcli.tool;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.knowcli.llm.DeepSeekClient;
@@ -25,6 +26,7 @@ import java.util.stream.Stream;
 
 public final class ToolRegistry {
     private final Map<String, Tool> tools = new HashMap<>();
+    private final ObjectMapper mapper = new ObjectMapper();
     private static final int MAX_WRITE_FILE_BYTES = 5 * 1024 * 1024;
 
     // 注册工具构造方法
@@ -35,15 +37,18 @@ public final class ToolRegistry {
     }
 
     // 工具类 （工具名、工具介绍、工具参数、工具执行逻辑）
-    public record Tool(String name, String description, JsonNode parameters, ToolExecutor executor) {}
+    public record Tool(String name, String description, JsonNode parameters, ToolExecutor executor) {
+    }
 
     // 工具的参数类 （参数名、参数类型、参数介绍、是否必须）
-    private record Param(String name, String type, String description, boolean required) {}
+    private record Param(String name, String type, String description, boolean required) {
+    }
 
     // 工具的执行逻辑
     public interface ToolExecutor {
         String execute(Map<String, String> args);
     }
+
 
     // 注册文件工具
     private void registerFileTools() {
@@ -146,8 +151,9 @@ public final class ToolRegistry {
 
     /**
      * 创建项目，支持Java、Python、Node.js
-     * @param typeValue 项目类型
-     * @param name 项目名称
+     *
+     * @param typeValue       项目类型
+     * @param name            项目名称
      * @param parentPathValue 父目录，默认为项目根目录
      * @return 创建项目的路径
      */
@@ -264,15 +270,15 @@ public final class ToolRegistry {
                 """.formatted(name));
         writeProjectFile(project, "src/main/java/com/example/Main.java", """
                 package com.example;
-
+                
                 public final class Main {
                     private Main() {
                     }
-
+                
                     public static String greet() {
                         return "Hello, world!";
                     }
-
+                
                     public static void main(String[] args) {
                         System.out.println(greet());
                     }
@@ -280,11 +286,11 @@ public final class ToolRegistry {
                 """);
         writeProjectFile(project, "src/test/java/com/example/MainTest.java", """
                 package com.example;
-
+                
                 import org.junit.jupiter.api.Test;
-
+                
                 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+                
                 class MainTest {
                     @Test
                     void greetsTheWorld() {
@@ -299,15 +305,15 @@ public final class ToolRegistry {
                 """);
         writeProjectFile(project, "README.md", """
                 # %s
-
+                
                 ## 测试
-
+                
                 ```shell
                 mvn test
                 ```
-
+                
                 ## 运行
-
+                
                 ```shell
                 mvn exec:java
                 ```
@@ -319,23 +325,23 @@ public final class ToolRegistry {
         writeProjectFile(project, "main.py", """
                 def greet():
                     return "Hello, world!"
-
-
+                
+                
                 if __name__ == "__main__":
                     print(greet())
                 """);
         writeProjectFile(project, "requirements.txt", "");
         writeProjectFile(project, "tests/test_main.py", """
                 import unittest
-
+                
                 from main import greet
-
-
+                
+                
                 class MainTest(unittest.TestCase):
                     def test_greet(self):
                         self.assertEqual("Hello, world!", greet())
-
-
+                
+                
                 if __name__ == "__main__":
                     unittest.main()
                 """);
@@ -347,15 +353,15 @@ public final class ToolRegistry {
                 """);
         writeProjectFile(project, "README.md", """
                 # %s
-
+                
                 ## 测试
-
+                
                 ```shell
                 python -m unittest discover
                 ```
-
+                
                 ## 运行
-
+                
                 ```shell
                 python main.py
                 ```
@@ -378,11 +384,11 @@ public final class ToolRegistry {
                 """.formatted(name));
         writeProjectFile(project, "src/index.js", """
                 import { pathToFileURL } from "node:url";
-
+                
                 export function greet() {
                   return "Hello, world!";
                 }
-
+                
                 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
                   console.log(greet());
                 }
@@ -390,9 +396,9 @@ public final class ToolRegistry {
         writeProjectFile(project, "test/index.test.js", """
                 import test from "node:test";
                 import assert from "node:assert/strict";
-
+                
                 import { greet } from "../src/index.js";
-
+                
                 test("greets the world", () => {
                   assert.equal(greet(), "Hello, world!");
                 });
@@ -404,15 +410,15 @@ public final class ToolRegistry {
                 """);
         writeProjectFile(project, "README.md", """
                 # %s
-
+                
                 ## 测试
-
+                
                 ```shell
                 npm test
                 ```
-
+                
                 ## 运行
-
+                
                 ```shell
                 npm start
                 ```
@@ -449,6 +455,7 @@ public final class ToolRegistry {
 
     /**
      * 写入文件时的路径检查及父目录创建
+     *
      * @param pathValue 路径
      * @return 目标路径
      */
@@ -490,6 +497,7 @@ public final class ToolRegistry {
 
     /**
      * 列出项目根目录内指定目录的当前层内容。
+     *
      * @param pathValue 目录路径，为空时使用项目根目录
      * @return 目录内容或错误信息
      */
@@ -571,6 +579,7 @@ public final class ToolRegistry {
 
     /**
      * 执行Shell命令
+     *
      * @param command 命令
      * @return 命令执行结果
      */
@@ -693,5 +702,59 @@ public final class ToolRegistry {
         // 工具参数中不允许出现未在 properties 里声明的额外字段
         root.put("additionalProperties", false);
         return root;
+    }
+
+    // 将注册工具转换成 DeepSeekClient.Tool
+    public List<DeepSeekClient.Tool> getToolDefinitions() {
+        return tools.values().stream()
+                .sorted(Comparator.comparing(Tool::name))
+                .map(tool -> new DeepSeekClient.Tool(
+                        tool.name(),
+                        tool.description(),
+                        tool.parameters()
+                ))
+                .toList();
+    }
+
+    /**
+     * 执行工具调用
+     * @param name 工具名称
+     * @param arguments 工具参数
+     * @return 工具执行结果
+     */
+    public String executeToolCalls(String name, String arguments) {
+        if (name == null || name.isBlank()) {
+            return "工具执行失败: 工具名称不能为空";
+        }
+
+        Tool tool = tools.get(name);
+        if (tool == null) {
+            return "工具执行失败: 未知工具: " + name;
+        }
+
+        try {
+            JsonNode argumentsJson = mapper.readTree(
+                    arguments == null || arguments.isBlank() ? "{}" : arguments
+            );
+            if (!argumentsJson.isObject()) {
+                return "工具执行失败: arguments 必须是 JSON 对象";
+            }
+
+            Map<String, String> parsedArguments = new HashMap<>();
+            argumentsJson.fields().forEachRemaining(entry -> {
+                JsonNode value = entry.getValue();
+                parsedArguments.put(
+                        entry.getKey(),
+                        value == null || value.isNull()
+                                ? null
+                                : value.isTextual() ? value.asText() : value.toString()
+                );
+            });
+            return tool.executor().execute(parsedArguments);
+        } catch (IOException exception) {
+            return "工具执行失败: arguments 不是有效 JSON: " + exception.getMessage();
+        } catch (RuntimeException exception) {
+            return "工具执行失败: " + exception.getMessage();
+        }
     }
 }
