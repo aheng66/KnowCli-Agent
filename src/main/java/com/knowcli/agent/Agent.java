@@ -206,10 +206,10 @@ public class Agent {
     }
 
     private static String loadSystemPrompt() {
-        try (InputStream stream = Agent.class.getResourceAsStream("/system-prompt.txt")) {
+        try (InputStream stream = Agent.class.getResourceAsStream("/SYSTEM_PROMPT.txt")) {
             if (stream == null) {
                 throw new IllegalStateException(
-                        "Missing classpath resource: /system-prompt.txt");
+                        "Missing classpath resource: /SYSTEM_PROMPT.txt");
             }
             String prompt = new String(stream.readAllBytes(), StandardCharsets.UTF_8).strip();
             if (prompt.isBlank()) {
